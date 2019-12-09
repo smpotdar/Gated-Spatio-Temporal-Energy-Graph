@@ -11,12 +11,12 @@ subprocess.Popen('find ./exp/.. -iname "*.pyc" -delete'.split())
 
 args = [
     '--name', __file__.split('/')[-1].split('.')[0],  # name is filename
-    '--cache-dir', '/mnt/disk3/hubertt/cr_caches/',
-    '--rgb-data', '/mnt/disk3/hubertt/Charades_v1_rgb/',
-    '--rgb-pretrained-weights', '/mnt/disk3/hubertt/rgb_i3d_pretrained.pt',
-    '--resume', '/mnt/disk3/hubertt/cr_caches/' + __file__.split('/')[-1].split('.')[0] + '/model.pth.tar',
-    '--train-file', './exp/Charades_v1_train.csv',
-    '--val-file', './exp/Charades_v1_test.csv',
+    '--cache-dir', './cr_caches',
+    '--rgb-data', '/home/ubuntu/10618-Project/dataset/Charades_v1_rgb',
+    '--rgb-pretrained-weights', './rgb_i3d_pretrained.pt',
+    '--resume', './cr_caches/' + __file__.split('/')[-1].split('.')[0] + '/model.pth.tar',
+    '--train-file', './10418_Charades_v1_train_Charades_v1_train.csv',
+    '--val-file', './10418_Charades_v1_test_Charades_v1_test.csv',
     '--groundtruth-lookup', './utils/groundtruth.p'    
 #'--evaluate',
 ]
