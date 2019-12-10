@@ -15,7 +15,7 @@ args = [
     '--rgb-data', '/home/ubuntu/10618-Project/dataset/Charades_v1_rgb',
     '--rgb-pretrained-weights', './rgb_i3d_pretrained.pt',
     '--resume', './cr_caches/' + __file__.split('/')[-1].split('.')[0] + '/model.pth.tar',
-    '--train-file', 'Charades_v1_train_1200.csv',
+    '--train-file', 'Charades_v1_train_500.csv',
     # '--val-file', '/home/ubuntu/10618-Project/Charades_v1_test.csv',
     '--val-file', 'Charades_v1_test_200.csv',
     '--groundtruth-lookup', './utils/groundtruth_200.p'    
