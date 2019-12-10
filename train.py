@@ -69,11 +69,6 @@ def accuracy(output, target, topk=(1,)):
         res.append(correct_k.mul_(100.0 / batch_size))
     return res[0], res[1], correct[:1].view(-1).float()
 
-
-
-
-
-
 def submission_file(ids, outputs, filename):
     """ write list of ids and outputs to filename"""
     with open(filename, 'w') as f:
@@ -181,7 +176,7 @@ class Trainer():
                           epoch, i, int(
                               len(loader)*args.train_size), len(loader),
                           batch_time=batch_time, data_time=data_time, loss=losses, s_top1=s_top1, s_top5=s_top5, o_top1=o_top1, o_top5=o_top5, v_top1=v_top1, v_top5=v_top5, sov_top1 = sov_top1))
-            break
+            # break
         return s_top1.avg, s_top5.avg, o_top1.avg, o_top5.avg, v_top1.avg, v_top5.avg, sov_top1.avg
 
     def validate(self, loader, base_model, logits_model, criterion, epoch, args):
@@ -240,7 +235,7 @@ class Trainer():
 
                 batch_time.update(time.time() - end)
                 end = time.time()
-
+                torch.cuda.empty_cache()
                 if i % args.print_freq == 0:
                     print('Test: [{0}/{1} ({2})]\t'
                           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
@@ -271,6 +266,7 @@ class Trainer():
 
             end = time.time()
             for i, (input, s_target, o_target, v_target, meta) in enumerate(loader):
+                print("loader number",i)
                 gc.collect()
                 meta['epoch'] = epoch
                 s_target = s_target.long().cuda(async=True)
@@ -296,6 +292,7 @@ class Trainer():
                 ids.append(meta['id'][0])
                 batch_time.update(time.time() - end)
                 end = time.time()
+                torch.cuda.empty_cache()
 
                 if i % args.print_freq == 0:
                     print('Test2: [{0}/{1}]\t'

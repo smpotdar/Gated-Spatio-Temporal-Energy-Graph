@@ -12,10 +12,13 @@ import os
 
 
 def parse_charades_csv(filename, s_lab2int):
+    print(filename)
     labels = {}
     with open(filename) as f:
         reader = csv.DictReader(f)
+        counter = 0
         for row in reader:
+            counter += 1
             vid = row['id']
             actions = row['actions']
             scene = row['scene']
@@ -26,6 +29,7 @@ def parse_charades_csv(filename, s_lab2int):
                 actions = [{'scene': s_lab2int[scene], 'class': x, 'start': float(
                     y), 'end': float(z)} for x, y, z in actions]
             labels[vid] = actions
+    print('vid count = ', counter)
     return labels
 
 
@@ -311,7 +315,7 @@ class Charades(data.Dataset):
                     o_target = torch.IntTensor(self.o_classes).zero_()
                     v_target = torch.IntTensor(self.v_classes).zero_()
                     for x in label:
-                        if x['start'] < ii/float(FPS) < x['end']:
+                        if x['start'] < ii/float(FPS) < x['end']: # ii/float(FPS) is calculating the time
                             o, v = cls2int(x['class'], self.c2ov)
                             o_target[o] = 1
                             v_target[v] = 1                       
@@ -327,6 +331,8 @@ class Charades(data.Dataset):
                     v_targets.append(v_target)
                     ids.append(vid)
                     times.append(ii)
+        print('Frame Length = ', len(rgb_image_paths))
+        # input()
         
         return {'rgb_image_paths': rgb_image_paths, 's_targets': s_targets, 'o_targets': o_targets, 'v_targets': v_targets, 'ids': ids, 'times': times}
 
@@ -337,9 +343,12 @@ class Charades(data.Dataset):
         Returns:
             tuple: (image, target) where target is class_index of the target class.
         """
+        # print('getitem')
+        # print('index = ', index)
         rgb_path = self.data['rgb_image_paths'][index]
         rgb_base = rgb_path[:-5-5]
         rgb_framenr = int(rgb_path[-5-5:-4])
+        # print('rgb_frame_number = ', rgb_framenr)
         rgb_STACK=10
         rgb_img = []
         for i in range(rgb_STACK):
@@ -353,6 +362,7 @@ class Charades(data.Dataset):
         meta = {}
         meta['id'] = self.data['ids'][index]
         meta['time'] = self.data['times'][index]
+        # print('meta = ', meta)
         
         if self.rgb_transform is not None:
             _rgb_img = []

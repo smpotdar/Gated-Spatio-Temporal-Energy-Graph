@@ -11,13 +11,14 @@ def parse():
     parser.add_argument('--dataset', metavar='DIR', default='charades',
                         help='name of dataset under datasets/')
     parser.add_argument('--train-file', default='./Charades_v1_train.csv')
-    parser.add_argument('--val-file', default='./Charades_v1_test.csv')
+    parser.add_argument('--val-file', default='/home/ubuntu/10618-Project/Charades_v1_test.csv')
     parser.add_argument('--groundtruth-lookup', default='./groudtruth.p')
+    # parser.add_argument('--groundtruth-lookup', default='./groudtruth_200.p')
     parser.add_argument('--rgb-arch', '-ra', metavar='ARCH', default='i3d',
                         help='model architecture: ')
     parser.add_argument('-j', '--workers', default=8, type=int, metavar='N',
                         help='number of data loading workers (default: 8)')
-    parser.add_argument('--epochs', default=20, type=int, metavar='N',
+    parser.add_argument('--epochs', default=21, type=int, metavar='N',
                         help='number of total epochs to run')
     parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                         help='manual epoch number (useful on restarts)')

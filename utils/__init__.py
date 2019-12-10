@@ -69,7 +69,9 @@ def eval_visual_relation(prediction, groundtruth_path = '', rec_nreturns=[50, 10
     tot_tp = defaultdict(list)
     prec_at_n = defaultdict(list)
     tot_gt_relations = 0
+    #print(groundtruth.items[0])
     for vid, gt_relations in groundtruth.items():
+        print(vid)
         predict_relations = prediction[vid]
         tag_prec, tag_rec, tag_scores = eval_tagging_scores(gt_relations, predict_relations)
         # record per video evaluation results
@@ -107,6 +109,7 @@ def get_predictions(inference_s, inference_o, inference_v):
     top_v_ind = np.argsort(inference_v)[-10:] 
 
     score = inference_s[top_s_ind, None, None] + inference_o[None, top_o_ind, None] + inference_v[None, None, top_v_ind]   
+    #print("score",score)
     top_flat_ind = np.argsort(score, axis = None)[-200:]
     top_score = score.ravel()[top_flat_ind]
     
@@ -117,5 +120,6 @@ def get_predictions(inference_s, inference_o, inference_v):
         for j in range(top_score.size)]
     
     predictions = sorted(predictions, key=lambda x: x[0], reverse=True) 
-    
+    # print("predictions: ", predictions)
+    # input()
     return predictions
