@@ -187,7 +187,7 @@ class AsyncTFCriterion(nn.Module, MessagePassing):
         self.BalanceLabels = BalanceLabels()
         self.winsmooth = 1
 
-    def forward(self, s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t, s_target, o_target, v_target, id_time, n=1, synchronous=False):
+    def forward(self, s, o, v, s_target, o_target, v_target, id_time, n=1, synchronous=False):
         if o_target.dim() == 1:
             print('converting Nx1 target to NxC')
             o_target = Variable(gtmat(o.shape, o_target.data.long()))
@@ -205,7 +205,7 @@ class AsyncTFCriterion(nn.Module, MessagePassing):
         qs = torch.nn.Sigmoid()(s.clone())
         qo = torch.nn.Sigmoid()(o.clone())
         qv = torch.nn.Sigmoid()(v.clone())
-        
+
         loss = s_loss + o_loss + v_loss
         s_out, o_out, v_out = qs.clone(), qo.clone(), qv.clone()
 
