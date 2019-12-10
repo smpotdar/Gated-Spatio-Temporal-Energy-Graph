@@ -126,9 +126,9 @@ class Trainer():
             v_target_var = torch.autograd.Variable(v_target)
             
             feat = base_model(input_var)
-            s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t = logits_model(feat)
+            s, o, v = logits_model(feat)
             
-            s_output, o_output, v_output, loss = criterion(*((s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t) + (s_target_var, o_target_var, v_target_var, meta)))
+            s_output, o_output, v_output, loss = criterion(*((s, o, v) + (s_target_var, o_target_var, v_target_var, meta)))
             
             s_prec1, s_prec5, s_prec1_output = accuracy_s(s_output.data, s_target, topk=(1, 5))
             o_prec1, o_prec5, o_prec1_output = accuracy(o_output.data, o_target, topk=(1, 5))
@@ -210,9 +210,9 @@ class Trainer():
                 v_target_var = torch.autograd.Variable(v_target)
                 
                 feat = base_model(input_var)
-                s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t = logits_model(feat)
+                s, o, v = logits_model(feat)
                 
-                s_output, o_output, v_output, loss = criterion(*((s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t) + (s_target_var, o_target_var, v_target_var, meta)))
+                s_output, o_output, v_output, loss = criterion(*((s, o, v) + (s_target_var, o_target_var, v_target_var, meta)))
                 
                 s_prec1, s_prec5, s_prec1_output = accuracy_s(s_output.data, s_target, topk=(1, 5))
                 o_prec1, o_prec5, o_prec1_output = accuracy(o_output.data, o_target, topk=(1, 5))

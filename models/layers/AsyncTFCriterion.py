@@ -198,71 +198,15 @@ class AsyncTFCriterion(nn.Module, MessagePassing):
         v_target = v_target.float()
         idtime = list(zip(id_time['id'], id_time['time']))
 
-        
-        s_msg, o_msg, v_msg  = self.get_msg(idtime, 'past')
-        s_fmsg, o_fmsg, v_fmsg  = self.get_msg(idtime, 'future')
-
         s_loss = self.cross_loss(s, s_target)
-        _qs = torch.nn.Softmax(dim = 1)(s)
-        o_loss = self.bce_loss(o, o_target) 
-        _qo = torch.nn.Sigmoid()(o)
+        o_loss = self.bce_loss(o, o_target)
         v_loss = self.bce_loss(v, v_target)
-        _qv = torch.nn.Sigmoid()(v)
-        
-        qs_before_softmax = s.clone()
-        
 
-        qs_before_softmax += torch.bmm(s_msg.unsqueeze(1), ss).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(ss, s_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(o_msg.unsqueeze(1), os_t).squeeze() * self.w_temporal 
-        qs_before_softmax += torch.bmm(so_t, o_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(v_msg.unsqueeze(1), vs_t).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(sv_t, v_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(so, _qo.unsqueeze(2)).squeeze() * self.w_spatio 
-        qs_before_softmax += torch.bmm(_qv.unsqueeze(1), vs).squeeze() * self.w_spatio
-        
-        s_loss += self.cross_loss(qs_before_softmax, s_target)
-        qs = torch.nn.Softmax(dim = 1)(qs_before_softmax)
-        
-        qo_before_sigmoid = o.clone()
-
-        qo_before_sigmoid += torch.bmm(o_msg.unsqueeze(1), oo).squeeze() * self.w_temporal 
-        qo_before_sigmoid += torch.bmm(oo, o_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qo_before_sigmoid += torch.bmm(v_msg.unsqueeze(1), vo_t).squeeze() * self.w_temporal
-        qo_before_sigmoid += torch.bmm(ov_t, v_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qo_before_sigmoid += torch.bmm(s_msg.unsqueeze(1), so_t).squeeze() * self.w_temporal 
-        qo_before_sigmoid += torch.bmm(os_t, s_fmsg.unsqueeze(2)).squeeze() * self.w_temporal 
-        qo_before_sigmoid += torch.bmm(_qs.unsqueeze(1), so).squeeze() * self.w_spatio
-        qo_before_sigmoid += torch.bmm(ov, _qv.unsqueeze(2)).squeeze() * self.w_spatio
-        
-        o_loss += self.bce_loss(qo_before_sigmoid, o_target) 
-        qo = torch.nn.Sigmoid()(qo_before_sigmoid)        
-        
-        qv_before_sigmoid = v.clone()
-            
-        qv_before_sigmoid += torch.bmm(v_msg.unsqueeze(1), vv).squeeze() * self.w_temporal 
-        qv_before_sigmoid += torch.bmm(vv, v_fmsg.unsqueeze(2)).squeeze() * self.w_temporal 
-        qv_before_sigmoid += torch.bmm(s_msg.unsqueeze(1), sv_t).squeeze() * self.w_temporal 
-        qv_before_sigmoid += torch.bmm(vs_t, s_fmsg.unsqueeze(2)).squeeze() * self.w_temporal 
-        qv_before_sigmoid += torch.bmm(o_msg.unsqueeze(1), ov_t).squeeze() * self.w_temporal
-        qv_before_sigmoid += torch.bmm(vo_t, o_fmsg.unsqueeze(2)).squeeze() * self.w_temporal 
-        qv_before_sigmoid += torch.bmm(vs, _qs.unsqueeze(2)).squeeze() * self.w_spatio
-        qv_before_sigmoid += torch.bmm(_qo.unsqueeze(1), ov).squeeze() * self.w_spatio 
-        
-        v_loss += self.bce_loss(qv_before_sigmoid, v_target) 
-        qv = torch.nn.Sigmoid()(qv_before_sigmoid)        
-
-        
-        # self.set_msg(qs, qo, qv, idtime)
-        self.set_msg(_qs, _qo, _qv, idtime)
+        qs = torch.nn.Sigmoid()(s.clone())
+        qo = torch.nn.Sigmoid()(o.clone())
+        qv = torch.nn.Sigmoid()(v.clone())
         
         loss = s_loss + o_loss + v_loss
-        if not synchronous or n > self.msg_n:
-            s_out, o_out, v_out = qs.clone(), qo.clone(), qv.clone()
-            if synchronous:
-                s_out = winsmooth(s_out, kernelsize=self.winsmooth)
-                o_out = winsmooth(o_out, kernelsize=self.winsmooth)
-                v_out = winsmooth(v_out, kernelsize=self.winsmooth)
-            return s_out, o_out, v_out, loss
-        else:
-            return self.forward(s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t, s_target, o_target, v_target, id_time, n=n + 1, synchronous=synchronous)
+        s_out, o_out, v_out = qs.clone(), qo.clone(), qv.clone()
+
+        return s_out, o_out, v_out, loss
