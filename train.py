@@ -278,9 +278,9 @@ class Trainer():
                 v_target_var = torch.autograd.Variable(v_target)
                 
                 feat = base_model(input_var)
-                s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t = logits_model(feat)
+                s, o, v = logits_model(feat)
                 
-                s_output, o_output, v_output, loss = criterion(*((s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t) + (s_target_var, o_target_var, v_target_var, meta)), synchronous=True)
+                s_output, o_output, v_output, loss = criterion(*((s, o, v) + (s_target_var, o_target_var, v_target_var, meta)), synchronous=True)
                 
                 # store predictions
                 s_output_video = s_output.max(dim=0)[0]
