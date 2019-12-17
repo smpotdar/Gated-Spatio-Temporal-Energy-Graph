@@ -58,11 +58,12 @@ def voc_ap(rec, prec, use_07_metric=False):
     return ap
 
 
-def eval_visual_relation(prediction, groundtruth_path = '', rec_nreturns=[50, 100], prec_nreturns=[1, 5, 10]):
+#def eval_visual_relation(prediction, groundtruth_path = '', rec_nreturns=[50, 100], prec_nreturns=[1, 5, 10]):
+def eval_visual_relation(prediction, groundtruth, rec_nreturns=[50, 100], prec_nreturns=[1, 5, 10]):
+
     """ evaluate visual relation tagging.
     """
-    with open(groundtruth_path, 'rb') as file:
-        groundtruth = pickle.load(file)
+    
     print('evaluating...')
     video_ap = dict()
     tot_scores = defaultdict(list)

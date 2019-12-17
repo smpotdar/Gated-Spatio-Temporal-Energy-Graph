@@ -7,6 +7,8 @@ import numpy as np
 #from utils import map
 from utils import get_predictions, eval_visual_relation
 import gc
+import pickle
+#Yolo
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -251,8 +253,23 @@ class Trainer():
                               batch_time=batch_time, loss=losses, s_top1=s_top1, s_top5=s_top5, o_top1=o_top1, o_top5=o_top5, v_top1=v_top1, v_top5=v_top5, sov_top1 = sov_top1))
             return s_top1.avg, s_top5.avg, o_top1.avg, o_top5.avg, v_top1.avg, v_top5.avg, sov_top1.avg
 
+    
+    def print_preds(self, og_preds, ints2scene, ints2object, ints2verb):
+        for element in og_preds:
+            ints = element[1]
+            print(ints2scene[ints[0]],ints2object[ints[1]],ints2verb[ints[2]])
+    
     def validate_video(self, loader, base_model, logits_model, criterion, epoch, args):
         """ Run video-level validation on the Charades test set"""
+
+        ints2scene = {0: 'Basement', 1: ' Bathroom', 2: ' Bedroom', 3: ' Closet / Walkin closet / Spear closet', 4: ' Dining room', 5: ' Entryway', 6: ' Garage', 7: ' Hallway', 8: ' Home Office / Study', 9: 'Kitchen', 10: ' Laundry room', 11: ' Living room', 12: ' Other', 13: 'Pantry', 14: ' Recreation room / Man cave', 15: ' Stairs'}
+        ints2object = {0: 'None', 1: ' bag', 2: ' bed', 3: ' blanket', 4: ' book', 5: ' box', 6: ' broom', 7: ' chair', 8: 'closet/cabinet', 9: ' clothes', 10: ' cup/glass/bottle', 11: ' dish', 12: 'door', 13: ' doorknob', 14: ' doorway', 15: ' floor', 16: ' food', 17: ' groceries', 18: 'hair', 19: ' hands', 20: ' laptop', 21: ' light', 22: ' medicine', 23: ' mirror', 24: ' paper/notebook', 25: ' phone/camera', 26: ' picture', 27: ' pillow', 28: ' refrigerator', 29: ' sandwich', 30: ' shelf', 31: ' shoe', 32: ' sofa/couch', 33: ' table', 34: ' television', 35: ' towel', 36: ' vacuum', 37: ' window'}
+        ints2verb = {0:'awaken', 1:'close', 2:'cook', 3:'dress', 4:'drink', 5:'eat', 6:'fix', 7:'grasp',
+                    8:'hold', 9:'laugh', 10:'lie', 11:'make', 12:'open', 13:'photograph', 14:'play', 
+                    15:'pour', 16:'put', 17:'run', 18:'sit', 19:'smile', 20:'sneeze', 21:'snuggle', 22: 'stand',
+                    23:'take', 24:'talk', 25:'throw', 26:'tidy', 27:'turn', 28:'undress', 29:'walk', 30:'wash',
+                    31:'watch', 32:'work'}
+
         with torch.no_grad():
             batch_time = AverageMeter()
             ids = []
@@ -265,6 +282,10 @@ class Trainer():
             criterion.eval()
 
             end = time.time()
+            groundtruth_path = args.groundtruth_lookup
+            with open(groundtruth_path, 'rb') as file:
+                groundtruth = pickle.load(file)
+
             for i, (input, s_target, o_target, v_target, meta) in enumerate(loader):
                 print("loader number",i)
                 gc.collect()
@@ -298,7 +319,18 @@ class Trainer():
                     print('Test2: [{0}/{1}]\t'
                           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})'.format(
                               i, len(loader), batch_time=batch_time))
-                    
+
+                groundtruth_single = dict()
+                groundtruth_single[meta['id'][0]] = groundtruth[meta['id'][0]]
+                print("ID: ", meta['id'][0])
+                if(meta['id'][0 ] == 'VW4UD'):
+                    sov_mAP, sov_rec_at_n, sov_mprec_at_n = eval_visual_relation(prediction=sov_prediction, groundtruth=groundtruth_single)
+                    print(' * sov_mAP {:.3f}'.format(sov_mAP))
+                    print(' * sov_rec_at_n', sov_rec_at_n)
+                    print(' * sov_mprec_at_n', sov_mprec_at_n)
+                    #print("############## sov prediction ############## = ", sov_prediction[meta['id'][0]])
+                    print("############## sov prediction ##############") 
+                    self.print_preds(sov_prediction[meta['id'][0]],ints2scene, ints2object, ints2verb)        
             sov_mAP, sov_rec_at_n, sov_mprec_at_n = eval_visual_relation(prediction=sov_prediction, groundtruth_path=args.groundtruth_lookup)
             print(' * sov_mAP {:.3f}'.format(sov_mAP))
             print(' * sov_rec_at_n', sov_rec_at_n)
